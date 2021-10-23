@@ -1,0 +1,65 @@
+root = (_wo (var | transform | axiom | rule | length | iterate) eod)*
+
+# var
+var = "var" _w id _wo "=" _wo eval
+
+# transform
+transform = "transform" _w (id | predef_transforms) _w transform_def
+
+transform_def = transform_def_rotate | transform_def_translate
+
+transform_def_rotate = "rotate" _w eval _w rotate_unit?
+rotate_unit = "deg" | "rad"
+
+transform_def_translate = "translate" _w eval _wo "," _wo eval
+
+# axiom
+axiom = "axiom" _w id
+
+# rule
+rule = "rule" _w id _wo "=" _wo rule_string (_w "bias" _w num)?
+
+rule_string = (rule_string_id | rule_string_non_id)+
+rule_string_id = id (_w | rule_string_non_id)
+rule_string_non_id = predef_transforms _wo | "[" rule_string "]" _wo
+
+# length
+length = "length" _w eval
+
+# iterate
+iterate = "iterate" _w eval
+
+# evaluated values
+eval = num | function | expr | id | group
+
+# mathematical expressions
+expr = eval operator eval
+
+group = _wo "(" _wo eval _wo ")"
+
+# functions
+function = id _wo "(" param_list ")" _wo
+
+param_list = _wo (eval _wo ("," param_list)?)? 
+
+# operators
+operator = _wo ("*" | "+" | "-" | "/") _wo
+
+# identifier
+id = id_char (id_char | digit)*
+
+# numeric value
+num = "-"? (digit+ ("." digit*)? | "." digit+)
+
+id_char = "a" | ... | "z" | "A" | ... | "Z" | "_"
+digit = "0" | ... | "9"
+
+# predefined transforms
+predef_transforms = "+" | "-"
+
+# end of declaration
+eod = _wo ";"
+# whitespace
+_w = "\s"+
+# optional whitespace
+_wo = "\s"*
