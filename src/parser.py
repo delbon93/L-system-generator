@@ -48,7 +48,6 @@ class Parser:
     
 
     def _prod_decl(self):
-        # TODO transform
         decl_type = self._lookahead.token_type
         node = None
         if decl_type == "var":
@@ -107,7 +106,7 @@ class Parser:
     def _prod_transform_translate(self, name_node):
         self._consume("translate")
         x_node = self._prod_eval()
-        self._consume("comma")
+        self._consume(",")
         y_node = self._prod_eval()
 
         return TranslateTransformNode(name_node, x_node, y_node)
@@ -192,14 +191,37 @@ class Parser:
 
 
     def _prod_eval(self):
-        # TODO function, expr, group
+        # TODO expr, group
         lookahead_type = self._lookahead.token_type
         if lookahead_type == "num":
             return self._prod_num()
         elif lookahead_type == "id":
-            return self._prod_id()
+            id_node = self._prod_id()
+            if self._lookahead.token_type == "(":
+                return self._prod_function(id_node)
+            else:
+                return id_node
         else:
             self._syntax_error(f"Unexpected token: '{self._tokenizer.get_readable(lookahead_type)}', expected number or identifier")
+
+
+    def _prod_function(self, name_node):
+        self._consume("(")
+
+        param_list = []
+
+        param_list_ends = False
+        while not param_list_ends:
+            # as long as we don't see closing parentheses, we expect a list of eval's
+            param_list.append(self._prod_eval())
+
+            if self._lookahead.token_type == ")":
+                param_list_ends = True
+                self._consume(")")
+            else:
+                self._consume(",")
+        
+        return FunctionNode(name_node, param_list)
 
 
     def _prod_num(self):

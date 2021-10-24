@@ -30,6 +30,12 @@ class IdentifierNode(EvalNode):
 
 
 @dataclass
+class FunctionNode(EvalNode):
+    name: IdentifierNode
+    param_list: list[EvalNode]
+
+
+@dataclass
 class DeclarationNode(ASTNode):
     pass
 
@@ -101,3 +107,4 @@ class RotateTransformNode(TransformDeclarationNode):
 class TranslateTransformNode(TransformDeclarationNode):
     x: EvalNode
     y: EvalNode
+
