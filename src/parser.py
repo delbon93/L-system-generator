@@ -201,8 +201,17 @@ class Parser:
                 return self._prod_function(id_node)
             else:
                 return id_node
+        elif lookahead_type == "(":
+            return self._prod_group()
         else:
             self._syntax_error(f"Unexpected token: '{self._tokenizer.get_readable(lookahead_type)}', expected number or identifier")
+
+
+    def _prod_group(self):
+        self._consume("(")
+        content_node = self._prod_eval()
+        self._consume(")")
+        return GroupNode(content_node)
 
 
     def _prod_function(self, name_node):

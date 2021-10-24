@@ -4,7 +4,7 @@ transform jump_left translate -5.5, 0;
 transform + rotate 90;
 
 // Variables
-var name = 42.1;
+var name = (42.1);
 var other_name = name; // unused
 var max_length = 6;
 
@@ -21,7 +21,7 @@ iterate iterate_count;
 // Rules
 rule F = [-F] [+F] F;
 
-rule F = F F bias 0.5;
+rule F = F F bias (max((5), var_name));
 rule x;
 rule F bias 0.05;
 

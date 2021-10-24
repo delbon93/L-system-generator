@@ -36,6 +36,11 @@ class FunctionNode(EvalNode):
 
 
 @dataclass
+class GroupNode(EvalNode):
+    content: EvalNode
+
+
+@dataclass
 class DeclarationNode(ASTNode):
     pass
 
