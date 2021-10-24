@@ -48,7 +48,7 @@ class Parser:
     
 
     def _prod_decl(self):
-        # TODO transform, length, iterate
+        # TODO transform
         decl_type = self._lookahead.token_type
         node = None
         if decl_type == "var":
@@ -57,11 +57,27 @@ class Parser:
             node = self._prod_rule()
         elif decl_type == "axiom":
             node = self._prod_axiom()
+        elif decl_type == "length":
+            node = self._prod_length()
+        elif decl_type == "iterate":
+            node = self._prod_iterate()
         else:
             self._syntax_error(f"Unknown token '{self._tokenizer.get_readable(decl_type)}', expected declaration", buffered_pos=False)
         
         self._consume("eod")
         return node
+
+
+    def _prod_length(self):
+        self._consume("length")
+        value_node = self._prod_eval()
+        return LengthDeclarationNode(value_node)
+
+
+    def _prod_iterate(self):
+        self._consume("iterate")
+        value_node = self._prod_eval()
+        return IterateDeclarationNode(value_node)
 
 
     def _prod_axiom(self):

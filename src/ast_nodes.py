@@ -51,6 +51,7 @@ class RuleDeclarationNode(DeclarationNode):
 class PushNode(ASTNode):
     pass
 
+
 @dataclass
 class PopNode(ASTNode):
     pass
@@ -59,3 +60,13 @@ class PopNode(ASTNode):
 @dataclass
 class AxiomDeclarationNode(DeclarationNode):
     axiom_name: IdentifierNode
+
+
+@dataclass
+class LengthDeclarationNode(DeclarationNode):
+    length: EvalNode
+
+
+@dataclass
+class IterateDeclarationNode(DeclarationNode):
+    iterations: EvalNode

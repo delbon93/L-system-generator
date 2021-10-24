@@ -2,6 +2,16 @@
 var name = 42.1;
 var other_name = name; // unused
 
+// Starting point
+axiom F;
+
+// Line length
+length 5;
+
+// Number of iterations
+var iterate_count = 10;
+iterate iterate_count;
+
 // Rules
 rule F = [-F] [+F] F;
 
