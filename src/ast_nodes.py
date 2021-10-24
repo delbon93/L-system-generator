@@ -12,15 +12,15 @@ class RootNode(ASTNode):
 
 @dataclass
 class EvalNode(ASTNode):
-    def eval(self):
-        pass
+    def eval(self, ctx):
+        return None
 
 
 @dataclass
 class NumNode(EvalNode):
     value: float
 
-    def eval(self):
+    def eval(self, ctx):
         return value
 
 
@@ -38,3 +38,24 @@ class DeclarationNode(ASTNode):
 class VarDeclarationNode(DeclarationNode):
     var_name: IdentifierNode
     var_value: EvalNode
+
+
+@dataclass
+class RuleDeclarationNode(DeclarationNode):
+    rule_name: IdentifierNode
+    rule_elements: list[ASTNode]
+    rule_bias: EvalNode = field(default=NumNode(1.0), init=False)
+
+
+@dataclass
+class PushNode(ASTNode):
+    pass
+
+@dataclass
+class PopNode(ASTNode):
+    pass
+
+
+@dataclass
+class AxiomDeclarationNode(DeclarationNode):
+    axiom_name: IdentifierNode

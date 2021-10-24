@@ -48,11 +48,15 @@ class Parser:
     
 
     def _prod_decl(self):
-        # TODO rule, transform, axiom, length, iterate
+        # TODO transform, length, iterate
         decl_type = self._lookahead.token_type
         node = None
         if decl_type == "var":
             node = self._prod_var()
+        elif decl_type == "rule":
+            node = self._prod_rule()
+        elif decl_type == "axiom":
+            node = self._prod_axiom()
         else:
             self._syntax_error(f"Unknown token '{self._tokenizer.get_readable(decl_type)}', expected declaration", buffered_pos=False)
         
@@ -60,14 +64,71 @@ class Parser:
         return node
 
 
+    def _prod_axiom(self):
+        self._consume("axiom")
+        name_node = self._prod_id()
+        return AxiomDeclarationNode(name_node)
+
+
     def _prod_var(self):
         token = self._consume("var")
-        name_node: IdentifierNode = self._prod_id()
+        name_node = self._prod_id()
         self._consume("assign")
-        value_node: EvalNode = self._prod_eval()
-
+        value_node = self._prod_eval()
         return VarDeclarationNode(name_node, value_node)
     
+
+    def _prod_rule(self):
+        token = self._consume("rule")
+        name_node = self._prod_id()
+
+        rule_elements = []
+        if self._lookahead.token_type == "assign":
+            self._consume("assign")
+            rule_elements = self._prod_rule_string()
+            if len(rule_elements) == 0:
+                self._syntax_error("Empty rule string")
+        
+        rule_node = RuleDeclarationNode(name_node, rule_elements)
+
+        if self._lookahead.token_type == "bias":
+            self._consume("bias")
+            rule_node.rule_bias = self._prod_eval()
+
+        return rule_node
+
+
+    def _prod_rule_string(self):
+        rule_elements = []
+        while self._lookahead.token_type != "bias" and self._lookahead.token_type != "eod":
+            next_node = None
+            if self._lookahead.token_type == "id":
+                next_node = self._prod_id()
+            elif self._lookahead.token_type == "[":
+                next_node = self._prod_push()
+            elif self._lookahead.token_type == "]":
+                next_node = self._prod_pop()
+            elif self._lookahead.token_type == "+" or self._lookahead.token_type == "-":
+                token_type = self._lookahead.token_type
+                token = self._consume(self._lookahead.token_type)
+                next_node = IdentifierNode(token_type)
+            
+            if next_node == None:
+                self._syntax_error(f"Unexpected token type '{self._lookahead.token_type}")
+            
+            rule_elements.append(next_node)
+        return rule_elements
+
+
+    def _prod_push(self):
+        token = self._consume("[")
+        return PushNode()
+    
+
+    def _prod_pop(self):
+        token = self._consume("]")
+        return PopNode()
+
 
     def _prod_eval(self):
         # TODO function, expr, group
@@ -85,6 +146,6 @@ class Parser:
         return NumNode(float(token.value))
     
     
-    def _prod_id(self):
-        token = self._consume("id")
+    def _prod_id(self, token_type="id"):
+        token = self._consume(token_type)
         return IdentifierNode(token.value)
