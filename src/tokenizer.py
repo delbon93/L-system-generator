@@ -1,6 +1,10 @@
 import re
 from dataclasses import dataclass
 
+_KEYWORDS = [
+    "var", "transform", "rule", "axiom", "length", "iterate", "bias"
+]
+
 _TOKENIZER_SPEC = [
     (r"^(//|#)", "comment"),
     (r"^var", "var"),
@@ -75,6 +79,10 @@ class Tokenizer:
         for rx, token_type in _TOKENIZER_SPEC:
             match = re.search(rx, string)
             if match:
+                if token_type in _KEYWORDS and self._cursor + len(token_type) < len(self._string):
+                    next_char = self._string[self._cursor + len(token_type)]
+                    if self._is_id_char(next_char):
+                        continue
                 if token_type == "comment":
                     self._advance_to_next_line()
                     return self.get_next_token()
@@ -84,6 +92,9 @@ class Tokenizer:
 
         raise SyntaxError(f"Unexpected token '{string[0]}' in line {self._line_number}:{self._line_cursor + 1}\n{self.get_error_excerpt()}")
     
+
+    def _is_id_char(self, char):
+        return re.search(char, r"^[a-zA-Z0-9_]$") != None
 
     def _incr_cursor(self, inc=1):
         self._cursor += inc
