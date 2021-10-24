@@ -70,3 +70,34 @@ class LengthDeclarationNode(DeclarationNode):
 @dataclass
 class IterateDeclarationNode(DeclarationNode):
     iterations: EvalNode
+
+
+@dataclass
+class TransformDeclarationNode(DeclarationNode):
+    transform_name: IdentifierNode
+
+
+@dataclass
+class UnitNode(ASTNode):
+    pass
+
+
+@dataclass
+class DegUnitNode(UnitNode):
+    pass
+
+
+@dataclass
+class RadUnitNode(UnitNode):
+    pass
+
+
+@dataclass
+class RotateTransformNode(TransformDeclarationNode):
+    angle: EvalNode
+    unit: UnitNode
+
+@dataclass
+class TranslateTransformNode(TransformDeclarationNode):
+    x: EvalNode
+    y: EvalNode

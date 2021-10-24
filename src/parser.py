@@ -61,11 +61,56 @@ class Parser:
             node = self._prod_length()
         elif decl_type == "iterate":
             node = self._prod_iterate()
+        elif decl_type == "transform":
+            node = self._prod_transform()
         else:
             self._syntax_error(f"Unknown token '{self._tokenizer.get_readable(decl_type)}', expected declaration", buffered_pos=False)
         
         self._consume("eod")
         return node
+
+
+    def _prod_transform(self):
+        self._consume("transform")
+
+        if self._lookahead.token_type == "+" or self._lookahead.token_type == "-":
+            token_type = self._lookahead.token_type
+            token = self._consume(self._lookahead.token_type)
+            name_node = IdentifierNode(token_type)
+        else:
+            name_node = self._prod_id()
+
+
+        if self._lookahead.token_type == "rotate":
+            return self._prod_transform_rotate(name_node)
+        elif self._lookahead.token_type == "translate":
+            return self._prod_transform_translate(name_node)
+        else:
+            self._syntax_error(f"Unexpected token '{self._lookahead.token_type}', expected transform type", buffered_pos=False)
+
+
+    def _prod_transform_rotate(self, name_node):
+        self._consume("rotate")
+        value_node = self._prod_eval()
+
+        unit_node = DegUnitNode()
+
+        if self._lookahead.token_type == "deg":
+            self._consume("deg")
+        elif self._lookahead.token_type == "rad":
+            self._consume("rad")
+            unit_node = RadUnitNode()
+        
+        return RotateTransformNode(name_node, value_node, unit_node)
+
+
+    def _prod_transform_translate(self, name_node):
+        self._consume("translate")
+        x_node = self._prod_eval()
+        self._consume("comma")
+        y_node = self._prod_eval()
+
+        return TranslateTransformNode(name_node, x_node, y_node)
 
 
     def _prod_length(self):

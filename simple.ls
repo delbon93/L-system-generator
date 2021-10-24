@@ -1,3 +1,8 @@
+transform rot_left rotate 45 deg;
+transform jump_left translate -5.5, 0;
+
+transform + rotate 90;
+
 // Variables
 var name = 42.1;
 var other_name = name; // unused

@@ -2,7 +2,8 @@ import re
 from dataclasses import dataclass
 
 _KEYWORDS = [
-    "var", "transform", "rule", "axiom", "length", "iterate", "bias"
+    "var", "transform", "rule", "axiom", "length", "iterate", 
+    "bias", "rotate", "translate", "deg", "rad",
 ]
 
 _TOKENIZER_SPEC = [
@@ -14,13 +15,18 @@ _TOKENIZER_SPEC = [
     (r"^length", "length"),
     (r"^iterate", "iterate"),
     (r"^bias", "bias"),
+    (r"^rotate", "rotate"),
+    (r"^translate", "translate"),
+    (r"^rad", "rad"),
+    (r"^deg", "deg"),
     (r"^=", "assign"),
     (r"^\[", "["),
     (r"^\]", "]"),
+    (r"^[+-]?(\d+(\.\d+)?|\.\d+)", "num"),
     (r"^\+", "+"),
     (r"^-", "-"),
-    (r"^-?(\d+(\.\d+)?|\.\d+)", "num"),
     (r"^[a-zA-Z_]\w*", "id"),
+    (r"^,", "comma"),
     (r"^;", "eod"),
 ]
 
