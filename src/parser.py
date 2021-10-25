@@ -197,10 +197,8 @@ class Parser:
         return PopNode()
 
 
-    def _prod_eval(self):
-        # TODO expr, group
+    def _prod_eval(self, op_mode=False):
         lookahead_type = self._lookahead.token_type
-
         node = None
 
         if lookahead_type == "num":
@@ -215,17 +213,34 @@ class Parser:
             node = self._prod_group()
         
         if node == None:
-            self._syntax_error(f"Unexpected token: '{self._tokenizer.get_readable(lookahead_type)}', expected number or identifier")
+            self._syntax_error(f"Unexpected token: '{self._tokenizer.get_readable(lookahead_type)}', expected value")
 
         # if next token is operator, node is part of a math expression
-        if self._lookahead.token_type in _OPERATOR_PRIORITY.keys():
+        if not op_mode and self._lookahead.token_type in _OPERATOR_PRIORITY.keys():
             node = self._prod_expr(node)
         
         return node
 
 
-    def _prod_expr(self, left_node):
-        # TODO HOW
+    def _prod_expr(self, start_node):
+        stack = [start_node]
+        
+        while self._lookahead.token_type in _OPERATOR_PRIORITY.keys():
+            stack.append(self._consume(self._lookahead.token_type).token_type)
+            stack.append(self._prod_eval(op_mode=True)) # op mode to avoid recursively calling _prod_expr()
+
+            if self._lookahead.token_type in _OPERATOR_PRIORITY.keys():
+                next_op_priority = _OPERATOR_PRIORITY[self._lookahead.token_type]
+                while len(stack) > 2 and next_op_priority < _OPERATOR_PRIORITY[stack[-2]]:
+                    right_node = stack.pop()
+                    op = stack.pop()
+                    left_node = stack.pop()
+                    stack.append(self._make_op(op, left_node, right_node))
+        
+        while len(stack) > 1:
+            stack.append(pop_op())
+        
+        return stack[0]
 
     
     def _make_op(self, op_type, left_node, right_node):
