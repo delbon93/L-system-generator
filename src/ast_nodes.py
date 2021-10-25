@@ -39,6 +39,58 @@ class FunctionNode(EvalNode):
 class GroupNode(EvalNode):
     content: EvalNode
 
+    def eval(self, ctx):
+        return content.eval(ctx)
+
+
+@dataclass
+class OpNode(EvalNode):
+    priority: int
+
+
+@dataclass
+class AddOpNode(OpNode):
+    left_node: EvalNode
+    right_node: EvalNode
+
+    def eval(self, ctx):
+        return self.left_node.eval(ctx) + self.right_node.eval(ctx)
+
+
+@dataclass
+class SubOpNode(OpNode):
+    left_node: EvalNode
+    right_node: EvalNode
+
+    def eval(self, ctx):
+        return self.left_node.eval(ctx) - self.right_node.eval(ctx)
+
+
+@dataclass
+class MulOpNode(OpNode):
+    left_node: EvalNode
+    right_node: EvalNode
+
+    def eval(self, ctx):
+        return self.left_node.eval(ctx) * self.right_node.eval(ctx)
+
+
+@dataclass
+class DivOpNode(OpNode):
+    left_node: EvalNode
+    right_node: EvalNode
+
+    def eval(self, ctx):
+        return self.left_node.eval(ctx) / self.right_node.eval(ctx)
+
+
+@dataclass
+class NegOpNode(OpNode):
+    node: EvalNode
+
+    def eval(self, ctx):
+        return self.node.eval() * (-1)
+
 
 @dataclass
 class DeclarationNode(ASTNode):

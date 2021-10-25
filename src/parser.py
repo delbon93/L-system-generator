@@ -1,6 +1,13 @@
 from tokenizer import Tokenizer, RawToken
 from ast_nodes import *
 
+_OPERATOR_PRIORITY = {
+    "+": 0,
+    "-": 0,
+    "*": 1,
+    "/": 1,
+}
+
 class Parser:
     """ Recursive descent parser for L-System grammar """
     
@@ -193,18 +200,44 @@ class Parser:
     def _prod_eval(self):
         # TODO expr, group
         lookahead_type = self._lookahead.token_type
+
+        node = None
+
         if lookahead_type == "num":
-            return self._prod_num()
+            node = self._prod_num()
         elif lookahead_type == "id":
             id_node = self._prod_id()
             if self._lookahead.token_type == "(":
-                return self._prod_function(id_node)
+                node = self._prod_function(id_node)
             else:
-                return id_node
+                node = id_node
         elif lookahead_type == "(":
-            return self._prod_group()
-        else:
+            node = self._prod_group()
+        
+        if node == None:
             self._syntax_error(f"Unexpected token: '{self._tokenizer.get_readable(lookahead_type)}', expected number or identifier")
+
+        # if next token is operator, node is part of a math expression
+        if self._lookahead.token_type in _OPERATOR_PRIORITY.keys():
+            node = self._prod_expr(node)
+        
+        return node
+
+
+    def _prod_expr(self, left_node):
+        # TODO HOW
+
+    
+    def _make_op(self, op_type, left_node, right_node):
+        if op_type == "+":
+            return AddOpNode(0, left_node, right_node)
+        elif op_type == "-":
+            return SubOpNode(0, left_node, right_node)
+        elif op_type == "*":
+            return MulOpNode(1, left_node, right_node)
+        elif op_type == "-":
+            return DivOpNode(1, left_node, right_node)
+        return None
 
 
     def _prod_group(self):
