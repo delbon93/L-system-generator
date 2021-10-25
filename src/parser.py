@@ -201,16 +201,18 @@ class Parser:
         lookahead_type = self._lookahead.token_type
         node = None
 
-        if lookahead_type == "num":
+        if lookahead_type == "num": # numbers
             node = self._prod_num()
-        elif lookahead_type == "id":
+        elif lookahead_type == "id": # identifiers (eg. var names)
             id_node = self._prod_id()
-            if self._lookahead.token_type == "(":
+            if self._lookahead.token_type == "(": # parentheses after id -> function
                 node = self._prod_function(id_node)
             else:
                 node = id_node
-        elif lookahead_type == "(":
+        elif lookahead_type == "(": # bracket term (aka group)
             node = self._prod_group()
+        elif lookahead_type == "-": # negated value
+            node = self._prod_neg_eval()
         
         if node == None:
             self._syntax_error(f"Unexpected token: '{self._tokenizer.get_readable(lookahead_type)}', expected value")
@@ -220,6 +222,11 @@ class Parser:
             node = self._prod_expr(node)
         
         return node
+
+
+    def _prod_neg_eval(self):
+        self._consume("-")
+        return NegOpNode(10, self._prod_eval())
 
 
     def _prod_expr(self, start_node):
@@ -238,7 +245,10 @@ class Parser:
                     stack.append(self._make_op(op, left_node, right_node))
         
         while len(stack) > 1:
-            stack.append(pop_op())
+            right_node = stack.pop()
+            op = stack.pop()
+            left_node = stack.pop()
+            stack.append(self._make_op(op, left_node, right_node))
         
         return stack[0]
 
