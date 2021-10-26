@@ -122,7 +122,7 @@ class PopNode(ASTNode):
 
 @dataclass
 class AxiomDeclarationNode(DeclarationNode):
-    axiom_name: IdentifierNode
+    axiom: list[ASTNode]
 
 
 @dataclass

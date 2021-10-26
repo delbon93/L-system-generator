@@ -133,8 +133,7 @@ class Parser:
 
     def _prod_axiom(self):
         self._consume("axiom")
-        name_node = self._prod_id()
-        return AxiomDeclarationNode(name_node)
+        return AxiomDeclarationNode(self._prod_rule_string())
 
 
     def _prod_var(self):
