@@ -1,7 +1,7 @@
 transform + rotate 25 deg;
 transform - rotate -25 deg;
 transform jump_left 
-    translate -1 * (random(3) + 2), 0;
+    translate -(random(3) + 2), 0;
 
 var small_bias = .1;
 

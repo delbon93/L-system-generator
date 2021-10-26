@@ -1,5 +1,10 @@
 from dataclasses import dataclass, field
 
+class EvalContext:
+    vars: dict
+    funcs: dict
+
+
 @dataclass
 class ASTNode:
     pass
@@ -12,15 +17,15 @@ class RootNode(ASTNode):
 
 @dataclass
 class EvalNode(ASTNode):
-    def eval(self, ctx):
-        return None
+    def eval(self, ctx: EvalContext):
+        raise NotImplemented("Eval on abstract class should not be called!")
 
 
 @dataclass
 class NumNode(EvalNode):
     value: float
 
-    def eval(self, ctx):
+    def eval(self, ctx: EvalContext):
         return value
 
 
@@ -28,11 +33,21 @@ class NumNode(EvalNode):
 class IdentifierNode(EvalNode):
     ident: str
 
+    def eval(self, ctx: EvalContext):
+        if self.ident in ctx.vars.keys():
+            return ctx.vars[self.ident]
+        raise ValueError(f"No variable with name '{self.ident}' exists")
+
 
 @dataclass
 class FunctionNode(EvalNode):
     name: IdentifierNode
     param_list: list[EvalNode]
+
+    def eval(self, ctx: EvalContext):
+        if self.name in ctx.funcs.keys():
+            return ctx.funcs[self.name](self.param_list)
+        raise ValueError(f"No function with name '{self.name} exists")
 
 
 @dataclass
