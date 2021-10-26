@@ -1,7 +1,7 @@
 import sys
 import json
 import dataclasses
-from parser import Parser
+from lsys.parser import Parser
 from pprint import pprint
 
 def read_file(file_name):

@@ -1,5 +1,5 @@
-from tokenizer import Tokenizer, RawToken
-from ast_nodes import *
+from .tokenizer import Tokenizer, RawToken
+from .ast_nodes import *
 
 _OPERATOR_PRIORITY = {
     "+": 0,
