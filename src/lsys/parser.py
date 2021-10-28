@@ -113,10 +113,13 @@ class Parser:
     def _prod_transform_translate(self, name_node):
         self._consume("translate")
         x_node = self._prod_eval()
-        self._consume(",")
-        y_node = self._prod_eval()
+        if self._lookahead.token_type == ",":
+            self._consume(",")
+            y_node = self._prod_eval()
+            return AbsTranslateTransformNode(name_node, x_node, y_node)
+        else:
+            return ForwardTranslateTransformNode(name_node, x_node)
 
-        return TranslateTransformNode(name_node, x_node, y_node)
 
 
     def _prod_length(self):

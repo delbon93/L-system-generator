@@ -1,8 +1,16 @@
 from dataclasses import dataclass, field
+import math
 
 class EvalContext:
     vars: dict
     funcs: dict
+
+
+@dataclass
+class TurtleState:
+    x: float
+    y: float
+    heading: float
 
 
 @dataclass
@@ -18,7 +26,7 @@ class RootNode(ASTNode):
 @dataclass
 class EvalNode(ASTNode):
     def eval(self, ctx: EvalContext):
-        raise NotImplemented("Eval on abstract class should not be called!")
+        raise NotImplementedError("Eval on abstract class should not be called!")
 
 
 @dataclass
@@ -154,6 +162,9 @@ class IterateDeclarationNode(DeclarationNode):
 class TransformDeclarationNode(DeclarationNode):
     transform_name: IdentifierNode
 
+    def apply(self, turtle_state: TurtleState):
+        raise NotImplementedError()
+
 
 @dataclass
 class UnitNode(ASTNode):
@@ -162,12 +173,14 @@ class UnitNode(ASTNode):
 
 @dataclass
 class DegUnitNode(UnitNode):
-    pass
+    def convert(self, value):
+        return (value / 360.0) * 2.0 * math.pi
 
 
 @dataclass
 class RadUnitNode(UnitNode):
-    pass
+    def convert(self, value):
+        return value
 
 
 @dataclass
@@ -175,8 +188,22 @@ class RotateTransformNode(TransformDeclarationNode):
     angle: EvalNode
     unit: UnitNode
 
+    def apply(self, turtle_state: TurtleState):
+        raise NotImplementedError()
+
+
 @dataclass
-class TranslateTransformNode(TransformDeclarationNode):
+class AbsTranslateTransformNode(TransformDeclarationNode):
     x: EvalNode
     y: EvalNode
 
+    def apply(self, turtle_state: TurtleState):
+        raise NotImplementedError()
+
+
+@dataclass
+class ForwardTranslateTransformNode(TransformDeclarationNode):
+    dist: EvalNode
+
+    def apply(self, turtle_state: TurtleState):
+        raise NotImplementedError()
