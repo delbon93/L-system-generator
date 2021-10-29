@@ -189,7 +189,8 @@ class RotateTransformNode(TransformDeclarationNode):
     unit: UnitNode
 
     def apply(self, turtle_state: TurtleState):
-        raise NotImplementedError()
+        angle = self.unit.convert(self.angle)
+        turtle_state.heading += angle
 
 
 @dataclass
@@ -198,7 +199,8 @@ class AbsTranslateTransformNode(TransformDeclarationNode):
     y: EvalNode
 
     def apply(self, turtle_state: TurtleState):
-        raise NotImplementedError()
+        turtle_state.x += self.x
+        turtle_state.y += self.y
 
 
 @dataclass
@@ -206,4 +208,7 @@ class ForwardTranslateTransformNode(TransformDeclarationNode):
     dist: EvalNode
 
     def apply(self, turtle_state: TurtleState):
-        raise NotImplementedError()
+        dx = self.dist * math.cos(turtle_state.heading)
+        dy = self.dist * math.sin(turtle_state.heading)
+        turtle_state.x += dx
+        turtle_state.y += dy
