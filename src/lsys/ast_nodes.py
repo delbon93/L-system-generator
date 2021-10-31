@@ -5,6 +5,13 @@ class EvalContext:
     vars: dict
     funcs: dict
 
+    @classmethod
+    def create(cls):
+        ctx = EvalContext()
+        ctx.vars = {}
+        ctx.funcs = {}
+        return ctx
+
 
 @dataclass
 class TurtleState:
@@ -34,7 +41,7 @@ class NumNode(EvalNode):
     value: float
 
     def eval(self, ctx: EvalContext):
-        return value
+        return self.value
 
 
 @dataclass

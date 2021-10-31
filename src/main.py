@@ -2,7 +2,9 @@ import sys
 import json
 import dataclasses
 from lsys.parser import Parser
+from lsys.interpreter import LSystemSpecification
 from pprint import pprint
+
 
 def read_file(file_name):
     file_string = ""
@@ -19,9 +21,12 @@ def main(argc, argv):
     print(f"Parsing file '{file_name}'...")
     ast = parser.parse(read_file(file_name))
 
-    print("Parsing successful! Printing abstract syntax tree (AST):\n")
-    pprint(ast)
+    # print("Parsing successful! Printing abstract syntax tree (AST):\n")
+    # pprint(ast)
     # print(json.dumps(dataclasses.asdict(ast), indent="  "))
+
+    spec = LSystemSpecification.create(ast)
+    pprint(spec)
 
 
 if __name__ == "__main__":
