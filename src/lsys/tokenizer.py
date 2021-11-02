@@ -1,51 +1,73 @@
 import re
+from enum import Enum, auto
 from dataclasses import dataclass
 
+class TokenType(Enum):
+    COMMENT = auto()
+    VAR = auto()
+    TRANSFORM = auto()
+    RULE = auto()
+    AXIOM = auto()
+    LENGTH = auto()
+    ITERATE = auto()
+    BIAS = auto()
+    ROTATE = auto()
+    TRANSLATE = auto()
+    RAD = auto()
+    DEG = auto()
+    ASSIGN = auto()
+    OPEN_BRACKET = auto()
+    CLOSE_BRACKET = auto()
+    OPEN_PAREN = auto()
+    CLOSE_PAREN = auto()
+    NUM = auto()
+    PLUS = auto()
+    MINUS = auto()
+    ASTERISK = auto()
+    SLASH = auto()
+    IDENTIFIER = auto()
+    COMMA = auto()
+    SEMICOLON = auto()
+    EOF = auto()
+
+
 _KEYWORDS = [
-    "var", "transform", "rule", "axiom", "length", "iterate", 
-    "bias", "rotate", "translate", "deg", "rad",
+    TokenType.VAR, TokenType.TRANSFORM, TokenType.RULE, TokenType.AXIOM, TokenType.LENGTH, TokenType.ITERATE, 
+    TokenType.BIAS, TokenType.ROTATE, TokenType.TRANSLATE, TokenType.DEG, TokenType.RAD,
 ]
 
 _TOKENIZER_SPEC = [
-    (r"^(//|#)", "comment"),
-    (r"^var", "var"),
-    (r"^transform", "transform"),
-    (r"^rule", "rule"),
-    (r"^axiom", "axiom"),
-    (r"^length", "length"),
-    (r"^iterate", "iterate"),
-    (r"^bias", "bias"),
-    (r"^rotate", "rotate"),
-    (r"^translate", "translate"),
-    (r"^rad", "rad"),
-    (r"^deg", "deg"),
-    (r"^=", "assign"),
-    (r"^\[", "["),
-    (r"^\]", "]"),
-    (r"^\(", "("),
-    (r"^\)", ")"),
-    (r"^(\d+(\.\d+)?|\.\d+)", "num"),
-    (r"^\+", "+"),
-    (r"^-", "-"),
-    (r"^\*", "*"),
-    (r"^/", "/"),
-    (r"^[a-zA-Z_]\w*", "id"),
-    (r"^,", ","),
-    (r"^;", "eod"),
+    (r"^(//|#)", TokenType.COMMENT),
+    (r"^var", TokenType.VAR),
+    (r"^transform", TokenType.TRANSFORM),
+    (r"^rule", TokenType.RULE),
+    (r"^axiom", TokenType.AXIOM),
+    (r"^length", TokenType.LENGTH),
+    (r"^iterate", TokenType.ITERATE),
+    (r"^bias", TokenType.BIAS),
+    (r"^rotate", TokenType.ROTATE),
+    (r"^translate", TokenType.TRANSLATE),
+    (r"^rad", TokenType.RAD),
+    (r"^deg", TokenType.DEG),
+    (r"^=", TokenType.ASSIGN),
+    (r"^\[", TokenType.OPEN_BRACKET),
+    (r"^\]", TokenType.CLOSE_BRACKET),
+    (r"^\(", TokenType.OPEN_PAREN),
+    (r"^\)", TokenType.CLOSE_PAREN),
+    (r"^(\d+(\.\d+)?|\.\d+)", TokenType.NUM),
+    (r"^\+", TokenType.PLUS),
+    (r"^-", TokenType.MINUS),
+    (r"^\*", TokenType.ASTERISK),
+    (r"^/", TokenType.SLASH),
+    (r"^[a-zA-Z_]\w*", TokenType.IDENTIFIER),
+    (r"^,", TokenType.COMMA),
+    (r"^;", TokenType.SEMICOLON),
 ]
-
-TOKENS_READABLE = {
-    "var": "var",
-    "assign": "=",
-    "num": "number",
-    "id": "identifier",
-    "eod": ";",
-}
 
 
 @dataclass
 class RawToken:
-    token_type: str
+    token_type: TokenType
     value: str
 
 
@@ -69,12 +91,12 @@ class Tokenizer:
         return self._cursor == len(self._string)
 
 
-    def get_next_token(self):
+    def get_next_token(self) -> RawToken:
         self._buffered_line_cursor = self._line_cursor
         self._buffered_line_number = self._line_number
 
         if not self.has_more_tokens():
-            return None
+            return TokenType.EOF
         
         # get string from cursor position and remove leading whitespace
         string = self._string[self._cursor:]
@@ -89,11 +111,14 @@ class Tokenizer:
         for rx, token_type in _TOKENIZER_SPEC:
             match = re.search(rx, string)
             if match:
-                if token_type in _KEYWORDS and self._cursor + len(token_type) < len(self._string):
-                    next_char = self._string[self._cursor + len(token_type)]
-                    if self._is_id_char(next_char):
-                        continue
-                if token_type == "comment":
+                if token_type in _KEYWORDS:
+                    # TODO rework this incredibly dirty hack!
+                    token_length = len(str(token_type).split(".")[1])
+                    if self._cursor + token_length < len(self._string):
+                        next_char = self._string[self._cursor + token_length]
+                        if self._is_id_char(next_char):
+                            continue
+                if token_type == TokenType.COMMENT:
                     self._advance_to_next_line()
                     return self.get_next_token()
                 else:
@@ -103,7 +128,7 @@ class Tokenizer:
         raise SyntaxError(f"Unexpected token '{string[0]}' in line {self._line_number}:{self._line_cursor + 1}\n{self.get_error_excerpt()}")
     
 
-    def _is_id_char(self, char):
+    def _is_id_char(self, char) -> bool:
         return re.search(char, r"^[a-zA-Z0-9_]$") != None
 
     def _incr_cursor(self, inc=1):
@@ -116,21 +141,16 @@ class Tokenizer:
             self._incr_cursor()
 
 
-    def get_pos(self, buffered=False):
+    def get_pos(self, buffered=False) -> tuple[int, int]:
         if buffered:
             return self._buffered_line_number, self._buffered_line_cursor + 1
         else:
             return self._line_number, self._line_cursor + 1
 
 
-    def get_error_excerpt(self, use_buffered_pos=False):
+    def get_error_excerpt(self, use_buffered_pos=False) -> str:
         line_number, line_cursor = self.get_pos(buffered=use_buffered_pos)
         line = self._string.split("\n")[line_number - 1]
         indicator = " " * line_cursor + "^"
         return f"{line}\n{indicator}"
 
-    
-    def get_readable(self, string):
-        if string in TOKENS_READABLE.keys():
-            return TOKENS_READABLE[string]
-        return string

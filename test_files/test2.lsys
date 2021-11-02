@@ -11,7 +11,7 @@ axiom F;
 rule F = a bias 5;
 rule F = b bias 2;
 
-rule F = c bias 1;
+rule F = c;
 rule F = d bias 3;
 
 
