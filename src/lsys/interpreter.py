@@ -7,13 +7,13 @@ import random
 
 class LSystemSpecification:
     
-    axiom: AxiomDeclarationNode = None
-    length: LengthDeclarationNode = None
-    iterate: IterateDeclarationNode = None
+    axiom_node: AxiomDeclarationNode = None
+    length_node: LengthDeclarationNode = None
+    iterate_node: IterateDeclarationNode = None
 
-    transforms: list[TransformDeclarationNode] = []
-    rules: list[RuleDeclarationNode] = []
-    variables: list[VarDeclarationNode] = []
+    transform_nodes: list[TransformDeclarationNode] = []
+    rule_nodes: list[RuleDeclarationNode] = []
+    var_nodes: list[VarDeclarationNode] = []
 
 
     @classmethod
@@ -24,54 +24,73 @@ class LSystemSpecification:
     @classmethod
     def create(cls, root: RootNode):
         spec = LSystemSpecification()
+        spec._create_defaults()
         error = LSystemSpecification._error
-        transform_names = []
         variable_names = []
+
+        iterate_declared = False
+        length_declared = False
 
         for node in root.body:
             if issubclass(type(node), AxiomDeclarationNode):
-                if spec.axiom != None:
+                if spec.axiom_node != None:
                     error("Axiom declared more than once")
-                spec.axiom = node
+                spec.axiom_node = node
             elif issubclass(type(node), LengthDeclarationNode):
-                if spec.length != None:
+                if length_declared:
                     error("Length declared more than once")
-                spec.length = node
+                spec.length_node = node
+                length_declared = True
             elif issubclass(type(node), IterateDeclarationNode):
-                if spec.iterate != None:
+                if iterate_declared:
                     error("Iterate declared more than once")
-                spec.iterate = node
+                spec.iterate_node = node
+                iterate_declared = True
             
             elif issubclass(type(node), RuleDeclarationNode):
-                spec.rules.append(node)
+                spec.rule_nodes.append(node)
             
             elif issubclass(type(node), TransformDeclarationNode):
-                if node.transform_name in transform_names:
-                    error(f"Redeclaration of transform '{node.transform_name.ident}'")
-                spec.transforms.append(node)
-                transform_names.append(node.transform_name)
+                # in case of redeclaration, remove existing transform
+                spec.transform_nodes = [transform for transform in spec.transform_nodes if transform.transform_name.ident != node.transform_name.ident]
+                spec.transform_nodes.append(node)
+
             elif issubclass(type(node), VarDeclarationNode):
                 if node.var_name in variable_names:
                     error(f"Redeclaration of variable '{node.var_name.ident}'")
-                spec.variables.append(node)
+                spec.var_nodes.append(node)
                 variable_names.append(node.var_name)
 
         return spec
     
     def __repr__(self):
-        string = ""
-        string += "[AXIOM] " + pprint.pformat(self.axiom) + "\n"
-        string += "[LENGTH] " + pprint.pformat(self.length) + "\n"
-        string += "[ITERATE] " + pprint.pformat(self.iterate) + "\n"
-        string += "[RULES] " + pprint.pformat(self.rules) + "\n"
-        string += "[VARIABLES] " + pprint.pformat(self.variables) + "\n"
-        string += "[TRANSFORMS] " + pprint.pformat(self.transforms) + "\n"
+        def ___list(list):
+            string = ""
+            for item in list:
+                string += "\n\t\t" +  pprint.pformat(item) + "\n"
+            return string
+        
+        string = "SPEC = {\n"
+        string += "\tAXIOM {\n\t\t" + pprint.pformat(self.axiom_node) + "\n\t}\n\n"
+        string += "\tLENGTH {\n\t\t" + pprint.pformat(self.length_node) + "\n\t}\n\n"
+        string += "\tITERATE {\n\t\t" + pprint.pformat(self.iterate_node) + "\n\t}\n\n"
+        string += "\tRULES {" + ___list(self.rule_nodes) + "\t}\n\n"
+        string += "\tVARIABLES {" + ___list(self.var_nodes) + "\t}\n\n"
+        string += "\tTRANSFORMS {" + ___list(self.transform_nodes) + "\t}\n"
+        string += "}"
         return string
 
 
+    def _create_defaults(self):
+        self.transform_nodes.append(RotateTransformNode(IdentifierNode("+"), NumNode(90), DegUnitNode()))
+        self.transform_nodes.append(RotateTransformNode(IdentifierNode("-"), NumNode(-90), DegUnitNode()))
+
+        self.length_node = LengthDeclarationNode(NumNode(1.0))
+        self.iterate_node = IterateDeclarationNode(NumNode(1.0))
+
 
     def select_rule(self, rule_identifier: str, ctx: EvalContext) -> RuleDeclarationNode:
-        rule_set = [rule for rule in self.rules if rule.rule_name.ident == rule_identifier]
+        rule_set = [rule for rule in self.rule_nodes if rule.rule_name.ident == rule_identifier]
 
         if len(rule_set) == 0:
             return None

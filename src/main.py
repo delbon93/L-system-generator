@@ -21,12 +21,13 @@ def main(argc, argv):
     print(f"Parsing file '{file_name}'...")
     ast = parser.parse(read_file(file_name))
 
-    print("Parsing successful! Printing abstract syntax tree (AST):\n")
-    pprint(ast)
-    # print(json.dumps(dataclasses.asdict(ast), indent="  "))
+    print("Parsing successful!")
+    # print("Printing abstract syntax tree (AST):\n")
+    # pprint(ast)
 
+    print("Printing L-system specification object:\n")
     spec = LSystemSpecification.create(ast)
-    # pprint(spec)
+    pprint(spec)
 
 
 if __name__ == "__main__":
