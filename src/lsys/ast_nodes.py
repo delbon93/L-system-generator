@@ -1,23 +1,6 @@
 from dataclasses import dataclass, field
+from .runtime_context import TurtleState, EvalContext
 import math
-
-class EvalContext:
-    vars: dict
-    funcs: dict
-
-    @classmethod
-    def create(cls):
-        ctx = EvalContext()
-        ctx.vars = {}
-        ctx.funcs = {}
-        return ctx
-
-
-@dataclass
-class TurtleState:
-    x: float
-    y: float
-    heading: float
 
 
 @dataclass
