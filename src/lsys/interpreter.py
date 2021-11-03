@@ -106,3 +106,11 @@ class LSystemSpecification:
             rng -= last_rule.rule_bias.eval(ctx)
             
         return last_rule
+    
+
+    def get_transform(self, transform_name: str) -> TransformDeclarationNode:
+        # TODO make lookup more efficient, use dicts!
+        for transform in self.transform_nodes:
+            if transform.transform_name.ident == transform_name:
+                return transform
+        return None

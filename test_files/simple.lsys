@@ -1,9 +1,22 @@
 axiom F;
 
-rule F = [+F] F [-F] bias 1.5;
-rule F = G bias 0.5;
+def angle = 45 / depth;
 
-rule G = _ bias 0.5;
-rule G = G G bias 0.75;
+transform + rotate angle deg;
+transform - rotate -angle deg;
 
-iterate 3;
+transform rot45left rotate 45 deg;
+transform rotrand rotate random() * 2 * pi rad;
+
+transform wiggle rotate random(-10, 10) deg;
+
+rule F = stem [+ wiggle branch] [- wiggle branch] wiggle branch;
+rule branch = F bias 3;
+rule branch = leaf bias 1;
+
+rule branch = [_] rotrand [_] rotrand [_] rotrand [_] rotrand [_] 
+    rotrand [_] rotrand [_] rotrand [_] bias max(0, depth - 7) * 10000;
+
+iterate 10;
+
+length 4 / (depth + 1);

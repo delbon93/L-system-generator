@@ -38,7 +38,7 @@ _KEYWORDS = [
 
 _TOKENIZER_SPEC = [
     (r"^(//|#)", TokenType.COMMENT),
-    (r"^var", TokenType.VAR),
+    (r"^(def|var)", TokenType.VAR),
     (r"^transform", TokenType.TRANSFORM),
     (r"^rule", TokenType.RULE),
     (r"^axiom", TokenType.AXIOM),

@@ -3,6 +3,11 @@ from .runtime_context import TurtleState, EvalContext
 import math
 
 
+def _zerorize(value: float) -> float:
+    """ forces values close to zero to be exactly zero """
+    return 0.0 if abs(value) < 1e-10 else value
+
+
 @dataclass
 class ASTNode:
     pass
@@ -33,7 +38,7 @@ class IdentifierNode(EvalNode):
 
     def eval(self, ctx: EvalContext):
         if self.ident in ctx.vars.keys():
-            return ctx.vars[self.ident]
+            return ctx.vars[self.ident].eval(ctx)
         raise ValueError(f"No variable with name '{self.ident}' exists")
 
 
@@ -43,8 +48,8 @@ class FunctionNode(EvalNode):
     param_list: list[EvalNode]
 
     def eval(self, ctx: EvalContext):
-        if self.name in ctx.funcs.keys():
-            return ctx.funcs[self.name](self.param_list)
+        if self.name.ident in ctx.funcs.keys():
+            return ctx.funcs[self.name.ident]([param.eval(ctx) for param in self.param_list])
         raise ValueError(f"No function with name '{self.name} exists")
 
 
@@ -53,7 +58,7 @@ class GroupNode(EvalNode):
     content: EvalNode
 
     def eval(self, ctx):
-        return content.eval(ctx)
+        return self.content.eval(ctx)
 
 
 @dataclass
@@ -102,7 +107,7 @@ class NegOpNode(OpNode):
     node: EvalNode
 
     def eval(self, ctx):
-        return self.node.eval() * (-1)
+        return self.node.eval(ctx) * (-1)
 
 
 @dataclass
@@ -152,7 +157,7 @@ class IterateDeclarationNode(DeclarationNode):
 class TransformDeclarationNode(DeclarationNode):
     transform_name: IdentifierNode
 
-    def apply(self, turtle_state: TurtleState):
+    def apply(self, turtle_state: TurtleState) -> TurtleState:
         raise NotImplementedError()
 
 
@@ -164,7 +169,7 @@ class UnitNode(ASTNode):
 @dataclass
 class DegUnitNode(UnitNode):
     def convert(self, value):
-        return (value / 360.0) * 2.0 * math.pi
+        return _zerorize((value / 360.0) * 2.0 * math.pi)
 
 
 @dataclass
@@ -178,9 +183,9 @@ class RotateTransformNode(TransformDeclarationNode):
     angle: EvalNode
     unit: UnitNode
 
-    def apply(self, turtle_state: TurtleState):
-        angle = self.unit.convert(self.angle)
-        turtle_state.heading += angle
+    def apply(self, turtle_state: TurtleState, ctx: EvalContext) -> TurtleState:
+        angle = self.unit.convert(self.angle.eval(ctx))
+        return TurtleState(turtle_state.x, turtle_state.y, _zerorize(turtle_state.heading + angle))
 
 
 @dataclass
@@ -188,17 +193,20 @@ class AbsTranslateTransformNode(TransformDeclarationNode):
     x: EvalNode
     y: EvalNode
 
-    def apply(self, turtle_state: TurtleState):
-        turtle_state.x += self.x
-        turtle_state.y += self.y
+    def apply(self, turtle_state: TurtleState, ctx: EvalContext) -> TurtleState:
+        x = _zerorize(turtle_state.x + self.x.eval(ctx))
+        y = _zerorize(turtle_state.y + self.y.eval(ctx))
+        return TurtleState(x, y, turtle_state.heading)
 
 
 @dataclass
 class ForwardTranslateTransformNode(TransformDeclarationNode):
     dist: EvalNode
 
-    def apply(self, turtle_state: TurtleState):
-        dx = self.dist * math.cos(turtle_state.heading)
-        dy = self.dist * math.sin(turtle_state.heading)
-        turtle_state.x += dx
-        turtle_state.y += dy
+    def apply(self, turtle_state: TurtleState, ctx: EvalContext) -> TurtleState:
+        d = self.dist.eval(ctx)
+        dx = d * math.cos(turtle_state.heading)
+        dy = d * math.sin(turtle_state.heading)
+        x = _zerorize(turtle_state.x + dx)
+        y = _zerorize(turtle_state.y + dy)
+        return TurtleState(x, y, turtle_state.heading)

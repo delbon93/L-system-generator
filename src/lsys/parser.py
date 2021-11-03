@@ -316,7 +316,7 @@ class Parser:
             return SubOpNode(0, left_node, right_node)
         elif op_type == TokenType.ASTERISK:
             return MulOpNode(1, left_node, right_node)
-        elif op_type == TokenType.MINUS:
+        elif op_type == TokenType.SLASH:
             return DivOpNode(1, left_node, right_node)
         else:
             raise Exception(f"Parser: Unsupported operator '{str(op_type)}'")
@@ -337,6 +337,9 @@ class Parser:
         param_list = []
 
         param_list_ends = False
+        if self._consume(TokenType.CLOSE_PAREN, optional=True) != None:
+                param_list_ends = True
+
         while not param_list_ends:
             # as long as we don't see closing parentheses, we expect a list of eval nodes
             param_list.append(self._prod_eval())
