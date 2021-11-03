@@ -42,6 +42,7 @@ class LSystemRenderer:
 
     
     def _apply_transform(self, transform_node: TransformDeclarationNode):
+        self._complexity_rating += self._depth
         prev_state = self._state()
         self._update(transform_node.apply(prev_state, self._ctx))
         if issubclass(type(transform_node), ForwardTranslateTransformNode | AbsTranslateTransformNode):
@@ -52,6 +53,7 @@ class LSystemRenderer:
         self._turtle_stack: list[TurtleState] = [TurtleState(0.0, 0.0, math.pi / 2.0)]
         self._ctx = EvalContext.create_from(instance.ctx)
         self._depth = 0
+        self._complexity_rating = 0
         self._default_transform = ForwardTranslateTransformNode("?", instance.spec.length_node.length)
         self._set_state_vars()
         self._reset()

@@ -74,6 +74,7 @@ def main(argc, argv):
     renderer.render(instance)
     print(f" ({timer_stop()})")
     print("All done.")
+    print("Complexity rating:", renderer._complexity_rating)
 
 
 if __name__ == "__main__":

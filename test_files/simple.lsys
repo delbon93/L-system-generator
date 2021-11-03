@@ -1,7 +1,8 @@
-axiom F;
+axiom [F] big_wiggle [F] big_wiggle [F];
 
 def angle = 45 / depth;
 
+transform r180 rotate 180 deg;
 transform + rotate angle deg;
 transform - rotate -angle deg;
 
@@ -9,13 +10,18 @@ transform rot45left rotate 45 deg;
 transform rotrand rotate random() * 2 * pi rad;
 
 transform wiggle rotate random(-10, 10) deg;
+transform big_wiggle rotate random(-15, 15) + 15 deg;
+
+transform petal translate random(0.25, 0.75);
 
 rule F = stem [+ wiggle branch] [- wiggle branch] wiggle branch;
 rule branch = F bias 3;
 rule branch = leaf bias 1;
 
-rule branch = [_] rotrand [_] rotrand [_] rotrand [_] rotrand [_] 
-    rotrand [_] rotrand [_] rotrand [_] bias max(0, depth - 7) * 10000;
+// rule branch = 
+//    [petal] rotrand [petal] rotrand [petal] rotrand [petal] 
+//    rotrand [petal] rotrand [petal] rotrand [petal] rotrand [petal]
+//    bias max(0, depth - 7) * 10000;
 
 iterate 10;
 
