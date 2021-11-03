@@ -10,19 +10,19 @@ transform rot45left rotate 45 deg;
 transform rotrand rotate random() * 2 * pi rad;
 
 transform wiggle rotate random(-10, 10) deg;
-transform big_wiggle rotate random(-15, 15) + 15 deg;
+transform big_wiggle rotate random(-30, 30) deg;
 
-transform petal translate random(0.25, 0.75);
+transform petal translate random(0.25, 0.45);
 
 rule F = stem [+ wiggle branch] [- wiggle branch] wiggle branch;
 rule branch = F bias 3;
 rule branch = leaf bias 1;
 
-// rule branch = 
-//    [petal] rotrand [petal] rotrand [petal] rotrand [petal] 
-//    rotrand [petal] rotrand [petal] rotrand [petal] rotrand [petal]
-//    bias max(0, depth - 7) * 10000;
+rule branch = 
+   [petal] rotrand [petal] rotrand [petal] rotrand [petal] 
+   rotrand [petal] rotrand [petal] rotrand [petal] rotrand [petal]
+   bias max(0, depth - (iterations - 2)) * 10000;
 
-iterate 10;
+iterate 5 + random(5);
 
 length 4 / (depth + 1);

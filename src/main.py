@@ -75,6 +75,7 @@ def main(argc, argv):
     print(f" ({timer_stop()})")
     print("All done.")
     print("Complexity rating:", renderer._complexity_rating)
+    print("Line Count:", renderer._line_count)
 
 
 if __name__ == "__main__":

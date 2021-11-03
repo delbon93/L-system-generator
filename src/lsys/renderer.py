@@ -47,6 +47,7 @@ class LSystemRenderer:
         self._update(transform_node.apply(prev_state, self._ctx))
         if issubclass(type(transform_node), ForwardTranslateTransformNode | AbsTranslateTransformNode):
             self._line(prev_state.x, prev_state.y, self._state().x, self._state().y)
+            self._line_count += 1
 
 
     def render(self, instance: LSystemInstance):
@@ -54,6 +55,7 @@ class LSystemRenderer:
         self._ctx = EvalContext.create_from(instance.ctx)
         self._depth = 0
         self._complexity_rating = 0
+        self._line_count = 0
         self._default_transform = ForwardTranslateTransformNode("?", instance.spec.length_node.length)
         self._set_state_vars()
         self._reset()
@@ -116,7 +118,8 @@ class LSystemSVGRenderer(LSystemRenderer):
 
 
     def _finalize(self):
-        scale = 100
+        scale = 50
+        line_width_factor = 40.0
 
         width = (self._bounds[2] - self._bounds[0]) * scale
         height = (self._bounds[3] - self._bounds[1]) * scale
@@ -129,7 +132,7 @@ class LSystemSVGRenderer(LSystemRenderer):
                     ((line[0] + offset[0]) * scale, (line[1] + offset[1]) * scale), 
                     ((line[2] + offset[0]) * scale, (line[3] + offset[1]) * scale),
                     stroke=svgwrite.rgb(0, 0, 0),
-                    stroke_width=scale/20.0
+                    stroke_width=scale/line_width_factor
                 )
             )
 
