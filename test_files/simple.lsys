@@ -1,7 +1,12 @@
-axiom [F] big_wiggle [F] big_wiggle [F];
-
 def angle = 45 / depth;
+def rand20 = random(-20, 20);
 
+// definitions for implicit transforms
+length random(2, 5);
+width max(random(0.2, 0.5), 5 - depth);
+color 45 + rand20, 100 + rand20, 20 + rand20;
+
+// explicit transforms
 transform r180 rotate 180 deg;
 transform + rotate angle deg;
 transform - rotate -angle deg;
@@ -12,8 +17,17 @@ transform rotrand rotate random() * 2 * pi rad;
 transform wiggle rotate random(-10, 10) deg;
 transform big_wiggle rotate random(-30, 30) deg;
 
-transform petal translate random(0.25, 0.45);
+transform petal 
+   translate random(0.25, 0.85) 
+   width random(0.7, 2.5) 
+   color 175 + rand20, 140 + rand20, 20 + rand20;
 
+// starting point of expansion
+axiom [F] big_wiggle [F] big_wiggle [F];
+// expand between 7 and 9 times
+iterate 7 + random(3);
+
+// rules for expanding the axiom
 rule F = stem [+ wiggle branch] [- wiggle branch] wiggle branch;
 rule branch = F bias 3;
 rule branch = leaf bias 1;
@@ -21,8 +35,4 @@ rule branch = leaf bias 1;
 rule branch = 
    [petal] rotrand [petal] rotrand [petal] rotrand [petal] 
    rotrand [petal] rotrand [petal] rotrand [petal] rotrand [petal]
-   bias max(0, depth - (iterations - 2)) * 10000;
-
-iterate 5 + random(5);
-
-length 4 / (depth + 1);
+   bias max(0, depth - (iterations - 3)) * 10000;

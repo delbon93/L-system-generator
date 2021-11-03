@@ -46,7 +46,9 @@ class LSystemRenderer:
         prev_state = self._state()
         self._update(transform_node.apply(prev_state, self._ctx))
         if issubclass(type(transform_node), ForwardTranslateTransformNode | AbsTranslateTransformNode):
-            self._line(prev_state.x, prev_state.y, self._state().x, self._state().y)
+            width = transform_node.width.eval(self._ctx)
+            color = transform_node.color.rgb(self._ctx)
+            self._line(prev_state.x, prev_state.y, self._state().x, self._state().y, width, color)
             self._line_count += 1
 
 
@@ -56,7 +58,12 @@ class LSystemRenderer:
         self._depth = 0
         self._complexity_rating = 0
         self._line_count = 0
-        self._default_transform = ForwardTranslateTransformNode("?", instance.spec.length_node.length)
+        self._default_transform = ForwardTranslateTransformNode(
+            "?", 
+            instance.spec.length_node.length,
+            instance.spec.width_node.width,
+            instance.spec.color_node.color
+            )
         self._set_state_vars()
         self._reset()
 
@@ -82,7 +89,7 @@ class LSystemRenderer:
         pass
 
     
-    def _line(self, x1, y1, x2, y2):
+    def _line(self, x1, y1, x2, y2, width, color):
         raise Exception(f"Method '_line_' in class '{type(self).__name__}' must be overridden")
 
     
@@ -92,8 +99,8 @@ class LSystemRenderer:
 
 class LSystemDebugPrintRenderer(LSystemRenderer):
 
-    def _line(self, x1, y1, x2, y2):
-        print(f"({x1}, {y1}) --> ({x2}, {y2})")
+    def _line(self, x1, y1, x2, y2, width, color):
+        print(f"({x1}, {y1}) --> ({x2}, {y2}) width={width}, rgb={color}")
 
 
 class LSystemSVGRenderer(LSystemRenderer):
@@ -107,8 +114,8 @@ class LSystemSVGRenderer(LSystemRenderer):
         self._lines = []
 
 
-    def _line(self, x1, y1, x2, y2):
-        self._lines.append([x1, -y1, x2, -y2])
+    def _line(self, x1, y1, x2, y2, width, color):
+        self._lines.append((x1, -y1, x2, -y2, width, color))
         self._bounds = [
             min(self._bounds[0], x1, x2), # lowest x value
             min(self._bounds[1], -y1, -y2), # lowest y value
@@ -119,20 +126,20 @@ class LSystemSVGRenderer(LSystemRenderer):
 
     def _finalize(self):
         scale = 50
-        line_width_factor = 40.0
 
         width = (self._bounds[2] - self._bounds[0]) * scale
         height = (self._bounds[3] - self._bounds[1]) * scale
         svg: svgwrite.Drawing = svgwrite.Drawing(self._file_name, size=(width, height))
 
         offset = (-self._bounds[0], -self._bounds[1])
-        for line in self._lines:
+        for x1, y1, x2, y2, width, color in self._lines:
+            r, g, b = color
             svg.add(
                 svg.line(
-                    ((line[0] + offset[0]) * scale, (line[1] + offset[1]) * scale), 
-                    ((line[2] + offset[0]) * scale, (line[3] + offset[1]) * scale),
-                    stroke=svgwrite.rgb(0, 0, 0),
-                    stroke_width=scale/line_width_factor
+                    ((x1 + offset[0]) * scale, (y1 + offset[1]) * scale), 
+                    ((x2 + offset[0]) * scale, (y2 + offset[1]) * scale),
+                    stroke=svgwrite.rgb(r, g, b),
+                    stroke_width=width
                 )
             )
 

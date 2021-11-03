@@ -146,6 +146,11 @@ class AxiomDeclarationNode(DeclarationNode):
 @dataclass
 class LengthDeclarationNode(DeclarationNode):
     length: EvalNode
+    
+
+@dataclass
+class WidthDeclarationNode(DeclarationNode):
+    width: EvalNode
 
 
 @dataclass
@@ -179,6 +184,24 @@ class RadUnitNode(UnitNode):
 
 
 @dataclass
+class ColorNode(ASTNode):
+
+    def rgb(self, ctx: EvalContext):
+        return (0, 0, 0)
+
+
+@dataclass
+class RGBColorNode(ASTNode):
+
+    r: EvalNode
+    g: EvalNode
+    b: EvalNode
+
+    def rgb(self, ctx: EvalContext):
+        return (self.r.eval(ctx), self.g.eval(ctx), self.b.eval(ctx))
+
+
+@dataclass
 class RotateTransformNode(TransformDeclarationNode):
     angle: EvalNode
     unit: UnitNode
@@ -192,6 +215,8 @@ class RotateTransformNode(TransformDeclarationNode):
 class AbsTranslateTransformNode(TransformDeclarationNode):
     x: EvalNode
     y: EvalNode
+    width: EvalNode
+    color: ColorNode
 
     def apply(self, turtle_state: TurtleState, ctx: EvalContext) -> TurtleState:
         x = _zerorize(turtle_state.x + self.x.eval(ctx))
@@ -202,6 +227,8 @@ class AbsTranslateTransformNode(TransformDeclarationNode):
 @dataclass
 class ForwardTranslateTransformNode(TransformDeclarationNode):
     dist: EvalNode
+    width: EvalNode
+    color: ColorNode
 
     def apply(self, turtle_state: TurtleState, ctx: EvalContext) -> TurtleState:
         d = self.dist.eval(ctx)
@@ -210,3 +237,8 @@ class ForwardTranslateTransformNode(TransformDeclarationNode):
         x = _zerorize(turtle_state.x + dx)
         y = _zerorize(turtle_state.y + dy)
         return TurtleState(x, y, turtle_state.heading)
+
+
+@dataclass
+class ColorDeclarationNode(DeclarationNode):
+    color: ColorNode

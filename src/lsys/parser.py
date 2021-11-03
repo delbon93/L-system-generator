@@ -94,6 +94,10 @@ class Parser:
             node = self._prod_axiom()
         elif token_type == TokenType.LENGTH:
             node = self._prod_length()
+        elif token_type == TokenType.WIDTH:
+            node = self._prod_width()
+        elif token_type == TokenType.COLOR:
+            node = self._prod_color_decl()
         elif token_type == TokenType.ITERATE:
             node = self._prod_iterate()
         elif token_type == TokenType.TRANSFORM:
@@ -124,6 +128,12 @@ class Parser:
             self._syntax_error(f"Unexpected token '{str(self._lookahead.token_type)}', expected transform type", buffered_pos=False)
 
 
+    def _prod_color_decl(self):
+        self._consume(TokenType.COLOR)
+        color = self._prod_color()
+        return ColorDeclarationNode(color)
+
+
     def _prod_transform_rotate(self, name_node):
         """ Production rule: rotation transform node """
         self._consume(TokenType.ROTATE)
@@ -145,14 +155,38 @@ class Parser:
         """ Production rule: translation transform node """
         self._consume(TokenType.TRANSLATE)
         x_node = self._prod_eval()
+        y_node = None
+        width = NumNode(1.0)
+        color = ColorNode()
 
         # one parameter -> forward translation
         # two parameters -> absolute translation
         if self._consume(TokenType.COMMA, optional=True) != None:
             y_node = self._prod_eval()
-            return AbsTranslateTransformNode(name_node, x_node, y_node)
+
+        if self._consume(TokenType.WIDTH, optional=True) != None:
+            width = self._prod_eval()
+
+        if self._consume(TokenType.COLOR, optional=True) != None:
+            color = self._prod_color()
+
+        if y_node == None:
+            return ForwardTranslateTransformNode(name_node, x_node, width, color)
         else:
-            return ForwardTranslateTransformNode(name_node, x_node)
+            return AbsTranslateTransformNode(name_node, x_node, y_node, width, color)
+
+
+    def _prod_color(self):
+        red = self._prod_eval()
+        if self._consume(TokenType.COMMA, optional=True) != None:
+            # expecting more color values
+            green = self._prod_eval()
+            self._consume(TokenType.COMMA)
+            blue = self._prod_eval()
+            return RGBColorNode(red, green, blue)
+        else:
+            # only grayscale was provided
+            return RGBColorNode(red, red, red)
 
 
     def _prod_length(self):
@@ -160,6 +194,13 @@ class Parser:
         self._consume(TokenType.LENGTH)
         value_node = self._prod_eval()
         return LengthDeclarationNode(value_node)
+        
+
+    def _prod_width(self):
+        """ Production rule: width node """
+        self._consume(TokenType.WIDTH)
+        value_node = self._prod_eval()
+        return WidthDeclarationNode(value_node)
 
 
     def _prod_iterate(self):

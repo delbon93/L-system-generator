@@ -9,6 +9,8 @@ class TokenType(Enum):
     RULE = auto()
     AXIOM = auto()
     LENGTH = auto()
+    WIDTH = auto()
+    COLOR = auto()
     ITERATE = auto()
     BIAS = auto()
     ROTATE = auto()
@@ -33,7 +35,7 @@ class TokenType(Enum):
 
 _KEYWORDS = [
     TokenType.VAR, TokenType.TRANSFORM, TokenType.RULE, TokenType.AXIOM, TokenType.LENGTH, TokenType.ITERATE, 
-    TokenType.BIAS, TokenType.ROTATE, TokenType.TRANSLATE, TokenType.DEG, TokenType.RAD,
+    TokenType.BIAS, TokenType.ROTATE, TokenType.TRANSLATE, TokenType.DEG, TokenType.RAD, TokenType.WIDTH, TokenType.COLOR
 ]
 
 _TOKENIZER_SPEC = [
@@ -43,6 +45,8 @@ _TOKENIZER_SPEC = [
     (r"^rule", TokenType.RULE),
     (r"^axiom", TokenType.AXIOM),
     (r"^length", TokenType.LENGTH),
+    (r"^width", TokenType.WIDTH),
+    (r"^color", TokenType.COLOR),
     (r"^iterate", TokenType.ITERATE),
     (r"^bias", TokenType.BIAS),
     (r"^rotate", TokenType.ROTATE),
@@ -100,12 +104,16 @@ class Tokenizer:
         
         # get string from cursor position and remove leading whitespace
         string = self._string[self._cursor:]
-        while string[0] in " \n":
+        
+        while self.has_more_tokens() and string[0] in " \n":
             self._incr_cursor()
             if string[0] == "\n":
                 self._line_number += 1
                 self._line_cursor = 0
             string = string[1:]
+
+        if self.is_eof():
+            return TokenType.EOF
         
         # try to read a token
         for rx, token_type in _TOKENIZER_SPEC:

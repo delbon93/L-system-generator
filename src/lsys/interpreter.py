@@ -9,7 +9,9 @@ class LSystemSpecification:
     
     axiom_node: AxiomDeclarationNode = None
     length_node: LengthDeclarationNode = None
+    width_node: WidthDeclarationNode = None
     iterate_node: IterateDeclarationNode = None
+    color_node: ColorDeclarationNode = None
 
     transform_nodes: list[TransformDeclarationNode] = []
     rule_nodes: list[RuleDeclarationNode] = []
@@ -30,6 +32,8 @@ class LSystemSpecification:
 
         iterate_declared = False
         length_declared = False
+        width_declared = False
+        color_declared = False
 
         for node in root.body:
             if issubclass(type(node), AxiomDeclarationNode):
@@ -41,6 +45,16 @@ class LSystemSpecification:
                     error("Length declared more than once")
                 spec.length_node = node
                 length_declared = True
+            elif issubclass(type(node), WidthDeclarationNode):
+                if width_declared:
+                    error("Width declared more than once")
+                spec.width_node = node
+                width_declared = True
+            elif issubclass(type(node), ColorDeclarationNode):
+                if color_declared:
+                    error("Color declared more than once")
+                spec.color_node = node
+                color_declared = True
             elif issubclass(type(node), IterateDeclarationNode):
                 if iterate_declared:
                     error("Iterate declared more than once")
@@ -73,6 +87,8 @@ class LSystemSpecification:
         string = "SPEC = {\n"
         string += "\tAXIOM {\n\t\t" + pprint.pformat(self.axiom_node) + "\n\t}\n\n"
         string += "\tLENGTH {\n\t\t" + pprint.pformat(self.length_node) + "\n\t}\n\n"
+        string += "\tWIDTH {\n\t\t" + pprint.pformat(self.width_node) + "\n\t}\n\n"
+        string += "\tCOLOR {\n\t\t" + pprint.pformat(self.color_node) + "\n\t}\n\n"
         string += "\tITERATE {\n\t\t" + pprint.pformat(self.iterate_node) + "\n\t}\n\n"
         string += "\tRULES {" + ___list(self.rule_nodes) + "\t}\n\n"
         string += "\tVARIABLES {" + ___list(self.var_nodes) + "\t}\n\n"
@@ -86,7 +102,9 @@ class LSystemSpecification:
         self.transform_nodes.append(RotateTransformNode(IdentifierNode("-"), NumNode(-90), DegUnitNode()))
 
         self.length_node = LengthDeclarationNode(NumNode(1.0))
+        self.width_node = WidthDeclarationNode(NumNode(1.0))
         self.iterate_node = IterateDeclarationNode(NumNode(1.0))
+        self.color_node = ColorNode()
 
 
     def select_rule(self, rule_identifier: str, ctx: EvalContext) -> RuleDeclarationNode:
