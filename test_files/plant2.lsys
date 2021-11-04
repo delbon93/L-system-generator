@@ -1,0 +1,16 @@
+iterate 6;
+
+def len = 0.15;
+def angle = 25.7;
+
+transform + rotate -angle deg;
+transform - rotate  angle deg;
+transform F translate len width 1;
+
+transform X translate 0;
+transform G translate 0;
+
+axiom G;
+
+rule G = G F X [+G] [-G];
+rule X = X [-FFF] [+FFF] F X;

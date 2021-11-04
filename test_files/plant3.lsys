@@ -1,0 +1,21 @@
+iterate 4;
+
+def len = 1.2;
+def angle = 30;
+
+transform + rotate -angle deg;
+transform - rotate  angle deg;
+transform I rotate 180 deg;
+transform F translate len;
+
+transform T translate 0;
+transform R translate 0;
+transform L translate 0;
+transform FX translate len * 0.3;
+
+axiom T;
+
+rule T = R + [T] - - [- -L] R [+ +L] - [T] + +T;
+rule R = F [- -L] [+ +L] F;
+rule L = [{+ FX - FX - FX + I + FX - FX -FX}];
+rule F = FF;

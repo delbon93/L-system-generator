@@ -1,3 +1,0 @@
-var x = -5;
-var y = -random(4);
-var z = 3 + -(4 -1);

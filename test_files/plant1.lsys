@@ -1,0 +1,21 @@
+iterate 9;
+
+def len = 0.5;
+
+transform + rotate -18 deg;
+transform - rotate  18 deg;
+transform F translate len width 2;
+
+transform S translate 0;
+transform G translate 0;
+transform H translate 0;
+transform T translate 0;
+transform L translate 0;
+
+axiom S L F F F;
+
+rule S = [+++G][---G] T S;
+rule G = +H[-G]L;
+rule H = -G[+H]L;
+rule T = T L;
+rule L = [- F F F F] [+ F F F] F;

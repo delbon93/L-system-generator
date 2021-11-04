@@ -1,0 +1,11 @@
+iterate 3;
+
+def len = 0.3;
+
+transform + rotate -90 deg;
+transform - rotate  90 deg;
+transform F translate len width 1;
+
+axiom F+F+F+F;
+
+rule F = F + F - F - F F + F + F - F;
