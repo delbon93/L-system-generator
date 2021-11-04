@@ -104,7 +104,7 @@ class LSystemSpecification:
         self.length_node = LengthDeclarationNode(NumNode(1.0))
         self.width_node = WidthDeclarationNode(NumNode(1.0))
         self.iterate_node = IterateDeclarationNode(NumNode(1.0))
-        self.color_node = ColorNode()
+        self.color_node = ColorDeclarationNode(ColorNode())
 
 
     def select_rule(self, rule_identifier: str, ctx: EvalContext) -> RuleDeclarationNode:
