@@ -22,6 +22,8 @@ class TokenType(Enum):
     CLOSE_BRACKET = auto()
     OPEN_PAREN = auto()
     CLOSE_PAREN = auto()
+    OPEN_CURLY = auto()
+    CLOSE_CURLY = auto()
     NUM = auto()
     PLUS = auto()
     MINUS = auto()
@@ -56,6 +58,8 @@ _TOKENIZER_SPEC = [
     (r"^=", TokenType.ASSIGN),
     (r"^\[", TokenType.OPEN_BRACKET),
     (r"^\]", TokenType.CLOSE_BRACKET),
+    (r"^{", TokenType.OPEN_CURLY),
+    (r"^}", TokenType.CLOSE_CURLY),
     (r"^\(", TokenType.OPEN_PAREN),
     (r"^\)", TokenType.CLOSE_PAREN),
     (r"^(\d+(\.\d+)?|\.\d+)", TokenType.NUM),

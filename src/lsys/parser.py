@@ -248,22 +248,44 @@ class Parser:
     def _prod_rule_string(self):
         """ Production rule: rule string """
         rule_elements = []
+        push_pop_balance = 0
+        begin_stop_fill_balance = 0
+
         while not self._is_next_any([TokenType.BIAS, TokenType.SEMICOLON]):
             next_node = None
             if self._is_next(TokenType.IDENTIFIER):
                 next_node = self._prod_id()
             elif self._is_next(TokenType.OPEN_BRACKET):
                 next_node = self._prod_push()
+                push_pop_balance += 1
             elif self._is_next(TokenType.CLOSE_BRACKET):
                 next_node = self._prod_pop()
+                push_pop_balance -= 1
+            elif self._is_next(TokenType.OPEN_CURLY):
+                next_node = self._prod_begin_fill()
+                begin_stop_fill_balance += 1
+            elif self._is_next(TokenType.CLOSE_CURLY):
+                next_node = self._prod_stop_fill()
+                begin_stop_fill_balance -= 1
             elif self._is_next(TokenType.PLUS) or self._is_next(TokenType.MINUS):
                 next_token = self._consume_any([TokenType.PLUS, TokenType.MINUS])
                 next_node = IdentifierNode(next_token.value)
             
+            if push_pop_balance < 0:
+                self._syntax_error("Unmatched closing ']'")
+            if begin_stop_fill_balance < 0:
+                self._syntax_error("Unmatched closing '}'")
+
             if next_node == None:
                 self._syntax_error(f"Unexpected token type '{str(self._lookahead.token_type)}")
             
             rule_elements.append(next_node)
+        
+        if push_pop_balance > 0:
+            self._syntax_error("Missing closing ']'")
+        if begin_stop_fill_balance > 0:
+            self._syntax_error("Missing closing '}'")
+
         return rule_elements
 
 
@@ -277,6 +299,17 @@ class Parser:
         """ Production rule: rule string pop operator """
         self._consume(TokenType.CLOSE_BRACKET)
         return PopNode()
+
+    
+
+    def _prod_begin_fill(self):
+        self._consume(TokenType.OPEN_CURLY)
+        return BeginFillNode()
+    
+
+    def _prod_stop_fill(self):
+        self._consume(TokenType.CLOSE_CURLY)
+        return StopFillNode()
 
 
     def _prod_eval(self, op_mode=False):

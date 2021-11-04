@@ -72,6 +72,10 @@ class LSystemRenderer:
                 self._push()
             elif type(node) == PopNode:
                 self._pop()
+            elif type(node) == BeginFillNode:
+                self._start_polygon()
+            elif type(node) == StopFillNode:
+                self._stop_polygon()
             elif type(node) == IdentifierNode:
                 transform = instance.spec.get_transform(node.ident)
                 if transform != None:
@@ -86,6 +90,14 @@ class LSystemRenderer:
     ####################
     
     def _reset(self):
+        pass
+
+
+    def _start_polygon(self):
+        pass
+
+
+    def _stop_polygon(self):
         pass
 
     
@@ -112,16 +124,36 @@ class LSystemSVGRenderer(LSystemRenderer):
     def _reset(self):
         self._bounds = [0, 0, 0, 0]
         self._lines = []
+        self._polygon_mode = False
+        self._polygon_close = (0, 0)
+        self._polygons = []
 
 
     def _line(self, x1, y1, x2, y2, width, color):
-        self._lines.append((x1, -y1, x2, -y2, width, color))
+        line = (x1, -y1, x2, -y2, width, color)
+        if self._polygon_mode:
+            self._polygons[-1].append((line[0], line[1]))
+            self._polygon_close = (line[2], line[3])
+        else:
+            self._lines.append(line)
+        
         self._bounds = [
             min(self._bounds[0], x1, x2), # lowest x value
             min(self._bounds[1], -y1, -y2), # lowest y value
             max(self._bounds[2], x1, x2), # highest x value
             max(self._bounds[3], -y1, -y2), # highest y value
         ]
+
+
+    def _start_polygon(self):
+        self._polygon_mode = True
+        self._polygons.append([])
+
+    
+    def _stop_polygon(self):
+        self._polygon_mode = False
+        self._polygons[-1].append(self._polygon_close)
+        # self._polygons[-1].append(self._polygons[-1][0])
 
 
     def _finalize(self):
@@ -140,6 +172,15 @@ class LSystemSVGRenderer(LSystemRenderer):
                     ((x2 + offset[0]) * scale, (y2 + offset[1]) * scale),
                     stroke=svgwrite.rgb(r, g, b),
                     stroke_width=width
+                )
+            )
+        
+        for points in self._polygons:
+            svg.add(
+                svg.polygon(
+                    points=[((x + offset[0]) * scale, (y + offset[1]) * scale) for x, y in points],
+                    fill="black",
+                    stroke="black"
                 )
             )
 

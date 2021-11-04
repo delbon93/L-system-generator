@@ -139,6 +139,16 @@ class PopNode(ASTNode):
 
 
 @dataclass
+class BeginFillNode(ASTNode):
+    pass
+
+
+@dataclass
+class StopFillNode(ASTNode):
+    pass
+
+
+@dataclass
 class AxiomDeclarationNode(DeclarationNode):
     axiom: list[ASTNode]
 
