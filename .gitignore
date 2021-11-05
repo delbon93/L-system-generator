@@ -3,3 +3,4 @@
 .vscode
 *.svg
 _*.lsys
+venv
